@@ -16,14 +16,43 @@ npm install @mcpulse/sdk
 
 ## Use
 
+One import, one wrap, after your tools are registered. `watch` returns the same
+server, so nothing downstream changes.
+
 ```ts
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { watch } from "@mcpulse/sdk";
 
-const server = watch(myServer, { key: "mp_live_…" });
+const server = new McpServer({ name: "my-server", version: "1.0.0" });
+
+// … your registerTool calls …
+
+watch(server, { key: process.env.MCPULSE_KEY });
+
+await server.connect(new StdioServerTransport());
 ```
 
-One import, one wrap. Your server is instrumented in place and handed straight
-back, so this drops around an existing one without moving anything else.
+### Serving over HTTP
+
+A streamable-HTTP server builds a fresh `McpServer` for every request, so there
+is no long-lived instance to wrap. Wrap it inside the factory instead, beside
+the tool registration:
+
+```ts
+function createServer() {
+  const server = new McpServer({ name: "my-server", version: "1.0.0" });
+
+  // … your registerTool calls …
+
+  return watch(server, { key: process.env.MCPULSE_KEY });
+}
+```
+
+Calling `watch` once per request is expected and cheap. The session and its
+buffer are shared for the life of the process, so your calls stay grouped into
+one session rather than one per request — which is what keeps retries and
+first-call success meaningful.
 
 Get a key by creating an MCP at [mcpulse.dev](https://mcpulse.dev) — it is shown
 once, at creation.
@@ -33,7 +62,7 @@ once, at creation.
 | Option | Default | |
 |---|---|---|
 | `key` | — | Ingest key, `mp_live_…`. Without one the SDK does nothing. |
-| `endpoint` | `https://api.mcpulse.dev` | Point at a local API while developing. |
+| `endpoint` | the hosted API | Point at a local API while developing. Not needed otherwise. |
 | `enabled` | `true` | Set false to turn it off without removing the call. |
 | `debug` | `false` | Log what is sent, to **stderr** — never stdout, which is the transport. |
 
