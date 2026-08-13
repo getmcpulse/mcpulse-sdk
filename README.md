@@ -62,14 +62,11 @@ once, at creation.
 | Option | Default | |
 |---|---|---|
 | `key` | — | Ingest key, `mp_live_…`. Without one the SDK does nothing. |
-| `endpoint` | the hosted API | Point at a local API while developing. Not needed otherwise. |
-| `enabled` | `true` | Set false to turn it off without removing the call. |
 | `debug` | `false` | Log what is sent, to **stderr** — never stdout, which is the transport. |
 
 ```ts
 watch(server, {
   key: process.env.MCPULSE_KEY ?? "",
-  endpoint: process.env.MCPULSE_ENDPOINT,
   debug: true,
 });
 ```
@@ -153,7 +150,7 @@ detection has something to find.
 ```bash
 cd examples/test-server
 pnpm install
-MCPULSE_KEY=mp_live_… MCPULSE_ENDPOINT=http://localhost:3000 pnpm exercise
+MCPULSE_KEY=mp_live_… pnpm exercise
 ```
 
 `pnpm exercise` drives every behaviour once through a real MCP client and waits
