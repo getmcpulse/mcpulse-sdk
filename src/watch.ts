@@ -1,6 +1,6 @@
-import { PayloadBuffer } from "./buffer.js";
+import type { PayloadBuffer } from "./buffer.js";
 import { is_empty_result } from "./empty.js";
-import { args_hash, new_session_id } from "./hash.js";
+import { args_hash } from "./hash.js";
 import { make_logger } from "./logger.js";
 import { resolve_options, type WatchOptions } from "./options.js";
 import { decide_outcome, run_in_slot, type CallSlot } from "./outcome.js";
@@ -16,7 +16,7 @@ import {
 import { patch_set_request_handler, wrap_handler } from "./patch.js";
 import { collect_tools, patch_registration, wrap_registered_tools } from "./tools.js";
 import { WIRE_VERSION } from "./types.js";
-import { register_exit_flush } from "./exit.js";
+import { stream_for } from "./session.js";
 
 /** Servers already being watched, so a second `watch()` is a no-op. */
 const watched = new WeakSet<object>();
@@ -85,8 +85,11 @@ function attach(
   options: ReturnType<typeof resolve_options>,
   log: Log,
 ): void {
-  const buffer = new PayloadBuffer(options, log);
-  const session_id = new_session_id();
+  // Shared across every `watch()` in this process that reports to the same
+  // place. An HTTP server builds a new `McpServer` per request; without this,
+  // each request would open a session of its own and no retry could ever be
+  // detected. See `session.ts`.
+  const { session_id, buffer } = stream_for(options, log);
   let client_name = "unknown";
 
   wrap_registered_tools(server);
@@ -119,8 +122,6 @@ function attach(
   // registered, so calling `watch()` on a server with no tools yet would find
   // nothing to wrap. Re-applying after each registration covers both orders.
   patch_set_request_handler(low, wrap_calls);
-
-  register_exit_flush(buffer);
 }
 
 /**

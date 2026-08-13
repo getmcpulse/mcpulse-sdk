@@ -1,6 +1,6 @@
 {
   "name": "@mcpulse/sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Analytics for MCP servers. One import, one wrap \u2014 see which of your tools actually work for the models calling them.",
   "license": "MIT",
   "type": "module",

@@ -15,12 +15,23 @@ import type { CallPayload, Payload, StartupPayload } from "../src/types.js";
  * them apart, and these are the tests that say the SDK still can.
  */
 
-const KEY = "mp_live_0123456789abcdef0123456789abcdef";
+/**
+ * A distinct key per test.
+ *
+ * The session and its buffer are now shared per destination for the life of the
+ * process — which is the point of them — so tests sharing one key would share a
+ * buffer across `vi.useFakeTimers()` boundaries and inherit a timer belonging
+ * to a clock that no longer exists. A unique key is also the honest model: two
+ * keys are two servers, and in production they are two processes.
+ */
+let key_counter = 0;
+let KEY = "";
 
 let sent: Payload[] = [];
 
 beforeEach(() => {
   sent = [];
+  KEY = `mp_live_${String(key_counter++).padStart(32, "0")}`;
   // The buffer holds payloads for five seconds before sending. Driving the
   // clock rather than waiting on it keeps the suite fast and, more usefully,
   // makes each test say exactly when it expects a flush.
@@ -338,5 +349,39 @@ describe("watching twice", () => {
     await flush();
 
     expect(calls()).toHaveLength(1);
+  });
+});
+
+describe("a server rebuilt per request", () => {
+  it("keeps one session across every server watched in this process", async () => {
+    // A streamable-HTTP MCP server constructs a fresh `McpServer` for each
+    // request, so `watch()` runs per request. A session id per `watch()` made
+    // every call its own session — and a retry is the same tool twice inside
+    // one session, so none could ever be found and first-call success read
+    // 100% however badly the server was doing.
+    const first = watch(build_server(), { key: KEY });
+    await call(first, "fast_tool", { q: "a" });
+
+    const second = watch(build_server(), { key: KEY });
+    await call(second, "fast_tool", { q: "b" });
+
+    await flush();
+
+    const sessions = new Set(calls().map((c) => c.session_id));
+    expect(calls()).toHaveLength(2);
+    expect(sessions.size).toBe(1);
+  });
+
+  it("keeps separate streams for separate destinations", async () => {
+    // Two servers reporting to different MCPs are two different customers'
+    // data. Merging them would file one's calls under the other.
+    const mine = watch(build_server(), { key: KEY });
+    const theirs = watch(build_server(), { key: `${KEY}_other` });
+
+    await call(mine, "fast_tool", { q: "x" });
+    await call(theirs, "fast_tool", { q: "x" });
+    await flush();
+
+    expect(new Set(calls().map((c) => c.session_id)).size).toBe(2);
   });
 });
