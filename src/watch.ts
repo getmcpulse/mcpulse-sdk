@@ -89,8 +89,10 @@ function attach(
   // place. An HTTP server builds a new `McpServer` per request; without this,
   // each request would open a session of its own and no retry could ever be
   // detected. See `session.ts`.
-  const { session_id, buffer } = stream_for(options, log);
-  let client_name = "unknown";
+  // Destructuring `client_name` out would copy the string and put the bug
+  // straight back, so the stream is held and read through.
+  const stream = stream_for(options, log);
+  const { session_id, buffer } = stream;
 
   wrap_registered_tools(server);
   patch_registration(server);
@@ -102,9 +104,9 @@ function attach(
     // is right here, and the getter is only populated once initialisation has
     // finished settling.
     const name = request?.params?.clientInfo?.name;
-    if (typeof name === "string" && name.length > 0) client_name = name.slice(0, 128);
+    if (typeof name === "string" && name.length > 0) stream.client_name = name.slice(0, 128);
 
-    void send_startup(low, buffer, session_id, client_name, log);
+    void send_startup(low, buffer, session_id, stream.client_name, log);
     return result;
   });
 
@@ -112,7 +114,7 @@ function attach(
     wrap_handler(low, TOOLS_CALL, (original) => (request, extra) => {
       const slot: CallSlot = { handler_ran: false, outcome: null };
       return run_in_slot(slot, () =>
-        record_call(original, request, extra, slot, buffer, session_id, () => client_name),
+        record_call(original, request, extra, slot, buffer, session_id, () => stream.client_name),
       );
     });
 

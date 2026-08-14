@@ -22,9 +22,25 @@ import type { ResolvedOptions } from "./options.js";
  * merging them would file one customer's calls under another's.
  */
 
-interface Stream {
+export interface Stream {
   session_id: string;
   buffer: PayloadBuffer;
+  /**
+   * Whoever most recently identified themselves on `initialize`.
+   *
+   * Lives here for the same reason the session id does. It was a local in
+   * `attach()`, which works for stdio — one `watch()`, one client — and fails
+   * for HTTP exactly as the session did: `initialize` is handled by one
+   * `McpServer` instance and `tools/call` by the next one, so the call never
+   * saw the name and every event was filed as "unknown".
+   *
+   * It follows the session's model rather than the transport's: one value per
+   * process per destination, last identification wins. For a server with two
+   * concurrent clients that is an approximation — but it is the same
+   * approximation the shared session already makes, and a name that is
+   * occasionally the other client's beats a column that is always "unknown".
+   */
+  client_name: string;
 }
 
 const streams = new Map<string, Stream>();
@@ -37,7 +53,11 @@ export function stream_for(
 
   let stream = streams.get(key);
   if (!stream) {
-    stream = { session_id: new_session_id(), buffer: new PayloadBuffer(options, log) };
+    stream = {
+      session_id: new_session_id(),
+      buffer: new PayloadBuffer(options, log),
+      client_name: "unknown",
+    };
     streams.set(key, stream);
     register_exit_flush(stream.buffer);
   }

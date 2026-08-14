@@ -1,7 +1,7 @@
 {
   "name": "@mcpulse/sdk",
-  "version": "0.1.4",
-  "description": "Analytics for MCP servers. One import, one wrap \u2014 see which of your tools actually work for the models calling them.",
+  "version": "0.1.5",
+  "description": "Analytics for MCP servers. One import, one wrap — see which of your tools actually work for the models calling them.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",

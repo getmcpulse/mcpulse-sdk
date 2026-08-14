@@ -372,6 +372,23 @@ describe("a server rebuilt per request", () => {
     expect(sessions.size).toBe(1);
   });
 
+  it("carries the client's name onto calls handled by a later server", async () => {
+    // The same fault as the session, one field over, and this one reached
+    // production: `initialize` lands on one `McpServer` and `tools/call` on
+    // the next, so a client name held per `watch()` was never in scope when a
+    // call was recorded. Every event from an HTTP server read "unknown" —
+    // metric 3 reporting nothing at all.
+    const first = watch(build_server(), { key: KEY });
+    await initialize(first, "claude-desktop");
+
+    const second = watch(build_server(), { key: KEY });
+    await call(second, "fast_tool", { q: "x" });
+    await flush();
+
+    expect(calls()).toHaveLength(1);
+    expect(calls()[0]?.client_name).toBe("claude-desktop");
+  });
+
   it("keeps separate streams for separate destinations", async () => {
     // Two servers reporting to different MCPs are two different customers'
     // data. Merging them would file one's calls under the other.

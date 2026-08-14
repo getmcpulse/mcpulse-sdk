@@ -1,3 +1,5 @@
+<img src="assets/logo.svg" alt="" width="44" height="44" align="left" />
+
 # @mcpulse/sdk
 
 Analytics for MCP servers. Tells you whether your tools actually work for the
