@@ -56,8 +56,9 @@ buffer are shared for the life of the process, so your calls stay grouped into
 one session rather than one per request — which is what keeps retries and
 first-call success meaningful.
 
-Get a key by creating an MCP at [mcpulse.dev](https://mcpulse.dev) — it is shown
-once, at creation.
+Get a key by creating an MCP at
+[app.getmcpulse.com](https://app.getmcpulse.com) — it is shown once, at
+creation.
 
 ### Options
 

@@ -20,16 +20,19 @@ export interface ResolvedOptions {
 /**
  * Where payloads go when `endpoint` is not given.
  *
- * The Railway URL rather than `api.mcpulse.dev`, because that domain is not
- * registered yet and a default that does not resolve is the worst kind: the
- * SDK never throws and drops a batch it cannot send, so a customer would
- * install this, wrap their server, see no error at all, and simply never
- * appear in their dashboard.
+ * This was the Railway URL for as long as there was no domain to point at, on
+ * the grounds that a default which does not resolve is the worst kind: the SDK
+ * never throws and drops a batch it cannot send, so a customer would install
+ * this, wrap their server, see no error at all, and simply never appear in
+ * their dashboard.
  *
- * Change it to the custom domain the day it exists — and publish a new version
- * the same day, because every server already running holds this string.
+ * That reasoning is why the switch to `api.getmcpulse.com` has to be made in
+ * the right order. The domain must answer *before* this ships: every server
+ * already running holds the old string and keeps working, but the first person
+ * to install the new version gets the new one, and if it is not live yet they
+ * get the silent failure above rather than an error anybody can see.
  */
-export const DEFAULT_ENDPOINT = "https://mcpulse-production.up.railway.app";
+export const DEFAULT_ENDPOINT = "https://api.getmcpulse.com";
 
 /** Flush when either is reached, whichever comes first. */
 export const FLUSH_AT_ITEMS = 30;
