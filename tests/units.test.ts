@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { is_empty_result } from "../src/empty.js";
-import { args_hash, new_session_id, stable_stringify } from "../src/hash.js";
+import { canonicalize } from "../src/canonical.js";
+import { args_hash, new_session_id } from "../src/hash.js";
 import { decide_outcome, type CallSlot } from "../src/outcome.js";
 import { resolve_options, DEFAULT_ENDPOINT } from "../src/options.js";
 
@@ -27,7 +28,7 @@ describe("args_hash", () => {
   });
 
   it("sorts at every depth, not only the top", () => {
-    expect(stable_stringify({ o: { z: 1, a: 2 } })).toBe('{"o":{"a":2,"z":1}}');
+    expect(canonicalize({ o: { z: 1, a: 2 } })).toBe('{"o":{"a":2,"z":1}}');
   });
 
   it("distinguishes different values", () => {

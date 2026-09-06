@@ -1,50 +1,43 @@
 import { createHash, randomBytes } from "node:crypto";
+import { canonicalize } from "./canonical.js";
+
+/** What an argument set hashes to when it cannot be serialised at all. */
+export const UNHASHABLE = "000000000000";
 
 /**
  * A short, one-way fingerprint of a call's arguments.
  *
  * This is the only thing MCPulse ever learns about what was passed to a tool,
  * and it is deliberately not enough to learn anything: 12 hex characters of a
- * SHA-256, with no way back. All the product asks of it is "were these two
- * calls made with the same arguments or different ones" — which is what
- * separates a model retrying a reworded request from a client paging through
- * results.
+ * SHA-256 over the RFC 8785 canonical form, with no way back. All the product
+ * asks of it is "were these two calls made with the same arguments or
+ * different ones" — which is what separates a model retrying a reworded
+ * request from a client paging through results.
  *
- * Keys are sorted first. Without that, `{a,b}` and `{b,a}` are the same call
- * with two different hashes, and every retry metric built on it is noise.
+ * Canonicalisation is what makes that question answerable across languages:
+ * key order is normalised at every depth, and numbers and strings are written
+ * the one way RFC 8785 allows. See `canonical.ts` for why that matters.
  */
 export function args_hash(args: unknown): string {
+  // A tool that takes no arguments is called with `arguments` absent. That is
+  // an ordinary call, not a failure, and it hashes as the empty object it is —
+  // otherwise every no-argument tool in the product shares one hash with every
+  // call whose arguments blew up.
+  const value = args === undefined ? {} : args;
+
   try {
-    return createHash("sha256").update(stable_stringify(args)).digest("hex").slice(0, 12);
+    return sha256_12(canonicalize(value));
   } catch {
-    // Unserialisable arguments (a BigInt, a circular structure). The call still
-    // happened and still deserves a row; it simply cannot be compared to
-    // another, so give it a constant that says exactly that.
-    return "000000000000";
+    // Arguments JSON cannot represent (a BigInt, a circular structure, a NaN).
+    // The call still happened and still deserves a row; it simply cannot be
+    // compared to another, so give it a constant that says exactly that.
+    return UNHASHABLE;
   }
 }
 
-/**
- * `JSON.stringify` with object keys in sorted order, at every depth.
- *
- * Array order is left alone — `[1,2]` and `[2,1]` are genuinely different
- * arguments, and sorting them would collapse two different calls into one.
- */
-export function stable_stringify(value: unknown): string {
-  return JSON.stringify(sort_deep(value));
-}
-
-function sort_deep(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sort_deep);
-
-  if (value && typeof value === "object") {
-    const source = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(source).sort()) sorted[key] = sort_deep(source[key]);
-    return sorted;
-  }
-
-  return value;
+/** The first 12 hex characters of the SHA-256 of a UTF-8 string. */
+function sha256_12(text: string): string {
+  return createHash("sha256").update(text, "utf8").digest("hex").slice(0, 12);
 }
 
 /**

@@ -52,7 +52,12 @@ export interface CallPayload {
   outcome: Outcome;
   response_bytes: number;
   is_empty: boolean;
-  /** Lowercase hex, keys sorted before hashing. Never reversible. */
+  /**
+   * First 12 lowercase hex characters of the SHA-256 of the RFC 8785 canonical
+   * form of the arguments. Never reversible, and identical across every
+   * MCPulse SDK — `tests/fixtures/canonical.json` is what holds them to that.
+   * `000000000000` means the arguments were not representable as JSON.
+   */
   args_hash: string;
 }
 

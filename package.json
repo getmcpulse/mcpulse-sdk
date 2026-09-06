@@ -35,7 +35,7 @@
     "type": "git",
     "url": "git+https://github.com/getmcpulse/mcpulse-sdk.git"
   },
-  "homepage": "https://github.com/getmcpulse/mcpulse-sdk#readme",
+  "homepage": "https://getmcpulse.com",
   "bugs": "https://github.com/getmcpulse/mcpulse-sdk/issues",
   "scripts": {
     "build": "tsup",

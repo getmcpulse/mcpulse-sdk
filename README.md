@@ -160,6 +160,27 @@ MCPULSE_KEY=mp_live_… pnpm exercise
 for the send. `pnpm start` runs the same server over stdio for a real client to
 connect to.
 
+## Read it back in Claude
+
+This package sends the data out. The dashboard is one way to read it and MCPulse's
+own MCP server is another — connect it and an agent answers "how is
+`search_orders` doing for Cursor" against your own account, with your own
+window. It is on every plan, free included.
+
+Sign-in is OAuth, so there is no key to copy or leak. Setup:
+[docs.getmcpulse.com/mcp/connect](https://docs.getmcpulse.com/mcp/connect), or
+add it from the [Smithery listing](https://smithery.ai/servers/mcpulse/mcpulse).
+
+<!-- Smithery's usage-counter badge belongs on the line above, as:
+
+     [![smithery badge](https://smithery.ai/badge/mcpulse/mcpulse)](https://smithery.ai/servers/mcpulse/mcpulse)
+
+     It is a plain link instead because `smithery.ai/badge/<server>` answers 500
+     for every server on the registry, their own `brave` and `gmail` included —
+     so the badge renders as a broken image rather than a counter. Swap it in
+     once that endpoint recovers; the link above already satisfies Smithery's
+     backlink check either way. -->
+
 ## Licence
 
 MIT
