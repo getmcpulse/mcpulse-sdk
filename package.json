@@ -33,10 +33,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/getmcpulse/mcpulse-sdk.git"
+    "url": "git+https://github.com/getmcpulse/mcpulse-typescript.git"
   },
   "homepage": "https://getmcpulse.com",
-  "bugs": "https://github.com/getmcpulse/mcpulse-sdk/issues",
+  "bugs": "https://github.com/getmcpulse/mcpulse-typescript/issues",
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
