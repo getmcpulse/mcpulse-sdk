@@ -5,6 +5,8 @@
 Analytics for MCP servers. Tells you whether your tools actually work for the
 models calling them.
 
+**[getmcpulse.com](https://getmcpulse.com)** · [Docs](https://docs.getmcpulse.com) · [Dashboard](https://app.getmcpulse.com)
+
 You publish an MCP server and can see nothing: not how many people use it, not
 which tools get called, not whether the model understands your descriptions, not
 what your server costs the people running it. This package is how that data

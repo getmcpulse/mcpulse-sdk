@@ -27,16 +27,22 @@
   "keywords": [
     "mcp",
     "model-context-protocol",
+    "mcp-server",
+    "mcp-analytics",
     "analytics",
     "observability",
-    "llm"
+    "monitoring",
+    "telemetry",
+    "llm-tools"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/getmcpulse/mcpulse-typescript.git"
   },
   "homepage": "https://getmcpulse.com",
-  "bugs": "https://github.com/getmcpulse/mcpulse-typescript/issues",
+  "bugs": {
+    "url": "https://github.com/getmcpulse/mcpulse-typescript/issues"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
